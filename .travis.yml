@@ -1,0 +1,9 @@
+language: node_js
+node_js:
+    - "7"
+script: yarn production
+deploy:
+    provider: surge
+      project: ./dist/
+        domain: colourful-amusement.surge.sh
+          skip_cleanup: true

@@ -3,7 +3,6 @@ module Main exposing (..)
 import Time
 import Random
 import Random.Extra
-import Random.List
 import Html exposing (..)
 import Html.Events exposing (..)
 import Html.Attributes exposing (..)
@@ -12,16 +11,16 @@ import Html.Attributes exposing (..)
 -- model
 
 
-type alias Color =
+type alias Colour =
     String
 
 
 type alias Model =
-    { colors : List Color
+    { colours : List Colour
     , active : Int
     , inProgress : Bool
-    , real : Color
-    , fake : Color
+    , real : Colour
+    , fake : Colour
     , hasWon : Bool
     , hasStarted : Bool
     , score : Int
@@ -32,7 +31,7 @@ type alias Model =
 
 initModel : Model
 initModel =
-    { colors =
+    { colours =
         [ "red"
         , "green"
         , "blue"
@@ -64,7 +63,7 @@ initModel =
 
 init : ( Model, Cmd Msg )
 init =
-    ( initModel, updateGameColors initModel )
+    ( initModel, updateGameColours initModel )
 
 
 
@@ -72,32 +71,32 @@ init =
 
 
 type Msg
-    = UpdateGameColors ( Color, Color )
-    | TriggerUpdateColors
-    | ChooseColor Color
+    = UpdateGameColours ( Colour, Colour )
+    | TriggerUpdateColours
+    | ChooseColour Colour
     | Tick
     | StartPlaying
     | RestartGame
 
 
-randomColor : Model -> Random.Generator Color
-randomColor model =
-    Random.Extra.sample (List.take model.active model.colors)
+randomColour : Model -> Random.Generator Colour
+randomColour model =
+    Random.Extra.sample (List.take model.active model.colours)
         |> Random.map (Maybe.withDefault "")
 
 
-changeGameColors : Model -> Random.Generator ( Color, Color )
-changeGameColors model =
-    Random.pair (randomColor model) (randomColor model)
+changeGameColours : Model -> Random.Generator ( Colour, Colour )
+changeGameColours model =
+    Random.pair (randomColour model) (randomColour model)
 
 
-updateGameColors : Model -> Cmd Msg
-updateGameColors model =
-    Random.generate UpdateGameColors (changeGameColors model)
+updateGameColours : Model -> Cmd Msg
+updateGameColours model =
+    Random.generate UpdateGameColours (changeGameColours model)
 
 
-increaseNumberOfColors : Model -> Model
-increaseNumberOfColors model =
+increaseNumberOfColours : Model -> Model
+increaseNumberOfColours model =
     { model | active = model.active + 2 }
 
 
@@ -117,17 +116,17 @@ levelUpChecker model mod levelUpFn =
 checkForLevelUps : Model -> Model
 checkForLevelUps model =
     let
-        activeColorsCount =
-            List.take model.active model.colors
+        activeColoursCount =
+            List.take model.active model.colours
                 |> List.length
     in
-        if activeColorsCount >= List.length model.colors then
+        if activeColoursCount >= List.length model.colours then
             winGame model
         else
             List.foldr
                 (\( mod, fn ) m -> levelUpChecker m mod fn)
                 model
-                [ ( 3, increaseNumberOfColors )
+                [ ( 3, increaseNumberOfColours )
                 , ( 4, increaseSpeed )
                 ]
 
@@ -163,7 +162,7 @@ processModelOnAnswer isCorrect model =
 processCommandOnAnswer : Bool -> Model -> Cmd Msg
 processCommandOnAnswer isCorrect model =
     if isCorrect then
-        updateGameColors model
+        updateGameColours model
     else
         Cmd.none
 
@@ -174,7 +173,7 @@ startGame model =
         | hasStarted = True
         , inProgress = True
       }
-    , updateGameColors model
+    , updateGameColours model
     )
 
 
@@ -184,11 +183,11 @@ update msg model =
         StartPlaying ->
             startGame model
 
-        UpdateGameColors ( real, fake ) ->
+        UpdateGameColours ( real, fake ) ->
             ( { model | real = real, fake = fake }, Cmd.none )
 
-        TriggerUpdateColors ->
-            ( model, updateGameColors model )
+        TriggerUpdateColours ->
+            ( model, updateGameColours model )
 
         Tick ->
             let
@@ -200,11 +199,11 @@ update msg model =
             in
                 ( newModel, Cmd.none )
 
-        ChooseColor color ->
+        ChooseColour colour ->
             if model.inProgress then
                 let
                     isCorrect =
-                        color == model.real
+                        colour == model.real
                 in
                     ( processModelOnAnswer isCorrect model
                     , processCommandOnAnswer isCorrect model
@@ -220,8 +219,8 @@ update msg model =
 -- view
 
 
-renderGameColor : Model -> Html Msg
-renderGameColor model =
+renderGameColour : Model -> Html Msg
+renderGameColour model =
     let
         containerStyles =
             [ ( "color", model.fake )
@@ -254,29 +253,29 @@ renderGameInfo model =
             ]
 
 
-renderColor : Color -> Html Msg
-renderColor color =
+renderColour : Colour -> Html Msg
+renderColour colour =
     let
-        buttonColors =
-            [ ( "background-color", color )
+        buttonColours =
+            [ ( "background-color", colour )
             , ( "color", "white" )
             , ( "cursor", "pointer" )
             ]
     in
         li []
             [ button
-                [ style buttonColors
+                [ style buttonColours
                 , class "btn btn-xs"
-                , onClick (ChooseColor color)
+                , onClick (ChooseColour colour)
                 ]
-                [ text color ]
+                [ text colour ]
             ]
 
 
-renderActiveColors : Model -> Html Msg
-renderActiveColors model =
-    List.take model.active model.colors
-        |> List.map renderColor
+renderActiveColours : Model -> Html Msg
+renderActiveColours model =
+    List.take model.active model.colours
+        |> List.map renderColour
         |> ul [ class "list-inline" ]
 
 
@@ -318,7 +317,7 @@ renderIntro =
             , style containerStyles
             ]
             [ h2 [] [ text "Welcome to this awesome game" ]
-            , div [] [ text "Your objective is simple: select the color it says you should." ]
+            , div [] [ text "Your objective is simple: select the colour it says you should." ]
             , div []
                 [ strong [] [ text "Remember" ]
                 , text " you have just a few seconds to do so"
@@ -368,10 +367,10 @@ renderGame model =
     in
         div [ class "container text-center" ]
             [ h3 [ style [ ( "font-weight", "200" ) ] ]
-                [ text "Riddle me this - what is my color?" ]
-            , renderActiveColors model
+                [ text "Riddle me this - what is my colour?" ]
+            , renderActiveColours model
             , hr [] []
-            , renderGameColor model
+            , renderGameColour model
             , renderGameInfo model
             , footer
             ]
