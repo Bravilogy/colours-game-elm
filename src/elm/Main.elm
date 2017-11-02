@@ -195,7 +195,7 @@ update msg model =
                     if model.timeLeft > 1 then
                         { model | timeLeft = model.timeLeft - 1 }
                     else
-                        { model | inProgress = False }
+                        endGame model
             in
                 ( newModel, Cmd.none )
 
