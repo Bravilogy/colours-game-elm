@@ -279,18 +279,6 @@ renderActiveColours model =
         |> ul [ class "list-inline" ]
 
 
-renderScore : Model -> Html Msg
-renderScore model =
-    let
-        label =
-            if model.inProgress then
-                "Current score: "
-            else
-                "Final score: "
-    in
-        h3 [] [ text (label ++ (toString model.score)) ]
-
-
 renderTimeLeft : Int -> Html Msg
 renderTimeLeft time =
     p [ style [ ( "font-size", "16px" ) ] ]
